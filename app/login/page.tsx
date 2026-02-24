@@ -1,17 +1,27 @@
-// Halaman login SENTINEL-POLDA
-// Menampilkan form login dengan validasi username dan password yang ketat
-
+// Halaman login SENTINEL-POLDA - Connected to Auth Context
 'use client'
 
 import React from 'react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth, useMockLogin } from '@/contexts/auth-context'
+import type { UserRole } from '@/contexts/auth-context'
 import { PoldaLogo } from '@/components/polda-logo'
 import { LoginErrorDialog } from '@/components/dialogs/login-error-dialog'
 import { Button } from '@/components/ui/button'
+import { useEffect } from 'react'
+
+// Mock credentials untuk testing (nanti ganti dengan API)
+const MOCK_CREDENTIALS = {
+  super_admin: { username: 'admin', password: 'admin123' },
+  analyst: { username: 'analyst', password: 'analyst123' },
+  user: { username: 'user', password: 'user123' },
+}
 
 export default function LoginPage() {
   const router = useRouter()
+  const { user } = useAuth()
+  const { loginAs } = useMockLogin()
   
   // State untuk input form
   const [username, setUsername] = useState('')
@@ -21,7 +31,25 @@ export default function LoginPage() {
   // State untuk error dialog
   const [showErrorDialog, setShowErrorDialog] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const [error, setError] = useState('') // Declare the error variable
+
+  // Redirect jika sudah login
+  // Redirect jika sudah login
+useEffect(() => {
+  if (user) {
+    router.push('/dashboard')
+  }
+}, [user, router])
+
+if (user) {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4"></div>
+        <p className="text-muted-foreground">Redirecting...</p>
+      </div>
+    </div>
+  )
+}
 
   // Fungsi untuk handle login
   const handleLogin = async (e: React.FormEvent) => {
@@ -36,7 +64,6 @@ export default function LoginPage() {
       if (!username.trim() || !password.trim()) {
         setErrorMessage('Username dan password harus diisi')
         setShowErrorDialog(true)
-        setError('Username dan password harus diisi') // Set error message
         return
       }
 
@@ -44,36 +71,38 @@ export default function LoginPage() {
       if (username.length < 3) {
         setErrorMessage('Username harus minimal 3 karakter')
         setShowErrorDialog(true)
-        setError('Username harus minimal 3 karakter') // Set error message
         return
       }
 
-      // Validasi: password minimal 6 karakter untuk keamanan
+      // Validasi: password minimal 6 karakter
       if (password.length < 6) {
         setErrorMessage('Password harus minimal 6 karakter')
         setShowErrorDialog(true)
-        setError('Password harus minimal 6 karakter') // Set error message
         return
       }
 
-      // Simulasi validasi password
-      // Di aplikasi real, ini akan check ke database
-      const validUsername = 'admin'
-      const validPassword = 'password123'
+      // Check credentials dan login sebagai role yang sesuai
+      let roleFound: UserRole | null = null
 
-      if (username === validUsername && password === validPassword) {
-        // Login berhasil - redirect ke dashboard
+      for (const [role, creds] of Object.entries(MOCK_CREDENTIALS)) {
+        if (username === creds.username && password === creds.password) {
+          roleFound = role as UserRole
+          break
+        }
+      }
+
+      if (roleFound) {
+        // Login berhasil - set user di auth context
+        loginAs(roleFound)
         router.push('/dashboard')
       } else {
         // Login gagal - tampilkan error dialog
         setErrorMessage('Username atau password salah. Silakan coba lagi.')
         setShowErrorDialog(true)
-        setError('Username atau password salah. Silakan coba lagi.') // Set error message
       }
     } catch (err) {
       setErrorMessage('Terjadi error. Silakan coba lagi nanti.')
       setShowErrorDialog(true)
-      setError('Terjadi error. Silakan coba lagi nanti.') // Set error message
     } finally {
       setIsLoading(false)
     }
@@ -81,19 +110,18 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
-      {/* Background accent elements - untuk visual yang lebih menarik */}
+      {/* Background accent elements */}
       <div className="absolute top-0 right-0 w-96 h-96 bg-secondary opacity-5 rounded-full blur-3xl" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary opacity-5 rounded-full blur-3xl" />
 
       <div className="relative z-10 w-full max-w-md">
-        {/* Bagian Logo - menampilkan lambang POLDA Jateng */}
-        <div className="flex justify-center mb-8">
-          <div className="w-32 h-40">
-            <PoldaLogo />
-          </div>
-        </div>
-
-        {/* Bagian Judul - nama dan deskripsi aplikasi */}
+  {/* Logo */}
+  <div className="flex justify-center mb-8">
+    <div className="w-32 aspect-square">
+      <PoldaLogo />
+    </div>
+  </div>
+        {/* Judul */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">
             SENTINEL-POLDA
@@ -103,7 +131,7 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Kartu Login - container utama form */}
+        {/* Kartu Login */}
         <div className="bg-card border border-border rounded-lg p-8 shadow-lg">
           <form onSubmit={handleLogin} className="space-y-6">
             {/* Input Username */}
@@ -148,28 +176,35 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          {/* Info Demo - credentials untuk testing */}
-          <div className="mt-6 p-3 bg-primary/20 border border-primary rounded-md text-xs text-muted-foreground">
-            <p className="font-semibold mb-1">Demo Credentials:</p>
-            <p>Username: admin</p>
-            <p>Password: password123</p>
+          {/* Info Demo Credentials */}
+          <div className="mt-6 p-4 bg-primary/20 border border-primary rounded-md text-xs text-muted-foreground space-y-3">
+            <p className="font-semibold text-sm"></p>
+            
+            <div>
+          
+              
+            </div>
+
+            <div>      
+            </div>
+            <div>
+            </div>
           </div>
         </div>
 
-        {/* Footer - informasi copyright */}
+        {/* Footer */}
         <div className="text-center mt-8 text-xs text-muted-foreground">
           <p>© 2024 POLDA Jawa Tengah</p>
           <p>Sistem Internal - Akses Terotorisasi</p>
         </div>
       </div>
 
-      {/* Dialog Error - muncul jika login gagal */}
+      {/* Dialog Error */}
       <LoginErrorDialog
         isOpen={showErrorDialog}
         message={errorMessage}
         onClose={() => {
           setShowErrorDialog(false)
-          // Clear password field setelah error
           setPassword('')
         }}
       />

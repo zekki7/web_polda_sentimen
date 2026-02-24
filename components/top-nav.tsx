@@ -1,15 +1,15 @@
-// Updated TopNav dengan role-based menu dan hover yang lebih jelas
+// Updated TopNav dengan Logout button
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/auth-context'
 import { motion } from 'framer-motion'
-import { PoldaLogo } from "./polda-logo"
 
 export function TopNav() {
   const pathname = usePathname()
-  const { user, hasRole } = useAuth()
+  const router = useRouter()
+  const { user, hasRole, logout } = useAuth()
 
   // Define menu items berdasarkan role
   const getMenuItems = () => {
@@ -47,20 +47,32 @@ export function TopNav() {
 
   const isActive = (href: string) => pathname === href
 
+  const handleLogout = () => {
+    const confirmLogout = confirm('Yakin ingin keluar?')
+    if (confirmLogout) {
+      logout()
+      router.push('/login')
+    }
+  }
+
   return (
     <nav className="bg-card border-b border-border sticky top-0 z-40 backdrop-blur-sm bg-card/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo / Brand */}
-         <Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center p-1">
-            <PoldaLogo />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-foreground">SENTINEL-POLDA</h1>
-            <p className="text-xs text-muted-foreground">Jawa Tengah</p>
-          </div>
-        </Link>
+<Link href="/dashboard" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+  <div className="w-10 h-10 flex items-center justify-center">
+    <img
+      src="/images/lambang-polda-jateng.png"
+      alt="Logo POLDA Jawa Tengah"
+      className="w-full h-full object-contain"
+    />
+  </div>
+  <div>
+    <h1 className="text-lg font-bold text-foreground">SENTINEL-POLDA</h1>
+    <p className="text-xs text-muted-foreground">Jawa Tengah</p>
+  </div>
+</Link>
 
           {/* Navigation Links */}
           <div className="flex items-center gap-2">
@@ -86,13 +98,15 @@ export function TopNav() {
             ))}
           </div>
 
-          {/* User Info & Role Badge */}
+          {/* User Info, Role Badge & Logout */}
           {user && (
             <div className="flex items-center gap-3">
               <div className="text-right">
                 <p className="text-sm font-medium text-foreground">{user.name}</p>
                 <p className="text-xs text-muted-foreground">{user.nrp}</p>
               </div>
+              
+              {/* Role Badge */}
               <div
                 className={`px-3 py-1 rounded-full text-xs font-semibold ${
                   user.role === 'super_admin'
@@ -108,6 +122,28 @@ export function TopNav() {
                   ? 'Analyst'
                   : 'User'}
               </div>
+
+              {/* Logout Button */}
+              <button
+                onClick={handleLogout}
+                className="px-4 py-2 bg-red-900/30 text-red-300 border border-red-700 rounded-lg text-sm font-medium hover:bg-red-900/50 transition-colors flex items-center gap-2"
+                title="Keluar"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                  />
+                </svg>
+                Keluar
+              </button>
             </div>
           )}
         </div>

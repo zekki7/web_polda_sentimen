@@ -54,17 +54,8 @@ const MOCK_USERS: Record<UserRole, User> = {
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Untuk development, default ke super_admin
-  // Nanti ganti dengan data dari localStorage/API
-  // nak meh gajal role e wil
-  // Login as Super Admin
-//const [user, setUser] = useState<User | null>(MOCK_USERS.super_admin)
-
-// Login as Analyst
-//const [user, setUser] = useState<User | null>(MOCK_USERS.analyst)
-
-// Login as User
-const [user, setUser] = useState<User | null>(MOCK_USERS.user)
+  // Default: BELUM LOGIN (null) - user harus login via form
+  const [user, setUser] = useState<User | null>(null)
 
   const login = (userData: User) => {
     setUser(userData)
@@ -74,8 +65,11 @@ const [user, setUser] = useState<User | null>(MOCK_USERS.user)
 
   const logout = () => {
     setUser(null)
-    // TODO: Clear localStorage/session
-    // localStorage.removeItem('user')
+    // Clear localStorage jika nanti pakai persistent login
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('user')
+      localStorage.removeItem('token')
+    }
   }
 
   const hasRole = (roles: UserRole | UserRole[]) => {
