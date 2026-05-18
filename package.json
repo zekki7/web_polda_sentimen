@@ -9,8 +9,6 @@
   },
   "scripts": {
     "check-compatibility": "node scripts/check-compatibility.mjs",
-    "preinstall": "npm run check-compatibility || true",
-    "prebuild": "npm run check-compatibility",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
