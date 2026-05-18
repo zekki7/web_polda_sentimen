@@ -1,23 +1,21 @@
-// Context untuk authentication dan role management
 'use client'
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-import { createContext, useContext, useState, ReactNode } from 'react'
-
-// Types untuk user dan role
-export type UserRole = 'super_admin' | 'analyst' | 'user'
+export type UserRole = 'super_admin' | 'analyst' | 'user' | 'officer' | 'admin'
 
 export interface User {
-  id: number
+  id: string
   name: string
   nrp: string
   email: string
   role: UserRole
-  region_code: string
+  region_code: string | null
 }
 
 interface AuthContextType {
   user: User | null
-  login: (userData: User) => void
+  token: string | null
+  login: (username: string, password: string) => Promise<{ success: boolean; message: string }>
   logout: () => void
   isAuthenticated: boolean
   hasRole: (roles: UserRole | UserRole[]) => boolean
@@ -25,51 +23,64 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Mock user untuk development - GANTI dengan data dari API
-const MOCK_USERS: Record<UserRole, User> = {
-  super_admin: {
-    id: 1,
-    name: 'Admin Utama',
-    nrp: '1234567890',
-    email: 'admin@polda.jateng.go.id',
-    role: 'super_admin',
-    region_code: 'JATENG',
-  },
-  analyst: {
-    id: 2,
-    name: 'Analis Data',
-    nrp: '0987654321',
-    email: 'analyst@polda.jateng.go.id',
-    role: 'analyst',
-    region_code: 'SEMARANG',
-  },
-  user: {
-    id: 3,
-    name: 'Petugas Lapangan',
-    nrp: '5555555555',
-    email: 'petugas@polda.jateng.go.id',
-    role: 'user',
-    region_code: 'SURAKARTA',
-  },
-}
+const API_URL = 'http://103.245.38.28/api'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Default: BELUM LOGIN (null) - user harus login via form
   const [user, setUser] = useState<User | null>(null)
+  const [token, setToken] = useState<string | null>(null)
 
-  const login = (userData: User) => {
-    setUser(userData)
-    // TODO: Save to localStorage/session
-    // localStorage.setItem('user', JSON.stringify(userData))
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedUser = localStorage.getItem('user')
+      const savedToken = localStorage.getItem('token')
+      if (savedUser && savedToken) {
+        setUser(JSON.parse(savedUser))
+        setToken(savedToken)
+      }
+    }
+  }, [])
+
+  const login = async (username: string, password: string) => {
+    try {
+      const response = await fetch(`${API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setUser(data.data.user)
+        setToken(data.data.token)
+        localStorage.setItem('user', JSON.stringify(data.data.user))
+        localStorage.setItem('token', data.data.token)
+        return { success: true, message: 'Login berhasil' }
+      } else {
+        return { success: false, message: data.message || 'Login gagal' }
+      }
+    } catch (err) {
+      return { success: false, message: 'Tidak dapat terhubung ke server' }
+    }
   }
 
   const logout = () => {
-    setUser(null)
-    // Clear localStorage jika nanti pakai persistent login
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('user')
-      localStorage.removeItem('token')
+    if (token) {
+      fetch(`${API_URL}/logout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      }).catch(() => {})
     }
+    setUser(null)
+    setToken(null)
+    localStorage.removeItem('user')
+    localStorage.removeItem('token')
   }
 
   const hasRole = (roles: UserRole | UserRole[]) => {
@@ -79,21 +90,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        logout,
-        isAuthenticated: !!user,
-        hasRole,
-      }}
-    >
+    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, hasRole }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-// Hook untuk menggunakan auth context
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
@@ -102,13 +104,10 @@ export function useAuth() {
   return context
 }
 
-// Helper untuk switch user (development only)
 export function useMockLogin() {
   const { login } = useAuth()
-  
-  const loginAs = (role: UserRole) => {
-    login(MOCK_USERS[role])
+  const loginAs = async (username: string, password: string) => {
+    return await login(username, password)
   }
-
-  return { loginAs, mockUsers: MOCK_USERS }
+  return { loginAs }
 }
