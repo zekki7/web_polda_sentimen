@@ -10,7 +10,7 @@ export function PageHeader() {
       animate={{ opacity: 1, y: 0 }}
       className="mb-8"
     >
-      <h1 className="text-4xl font-bold text-foreground mb-2">User Management</h1>
+      <h1 className="text-4xl font-bold text-foreground mb-2">Manajemen Pengguna</h1>
       <p className="text-muted-foreground">
         Kelola pengguna dan role mereka
       </p>

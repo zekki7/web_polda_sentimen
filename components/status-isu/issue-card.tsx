@@ -3,8 +3,7 @@
 
 import { motion } from 'framer-motion'
 import { Issue } from '@/lib/data/issues-data'
-import { UrgencyBadge } from '@/components/urgency-badge'
-import { STATUS_COLORS } from '@/lib/constants/issue-status'
+import { StatusBadge } from './status-badge'
 import { IssueActions } from './issue-actions'
 
 interface IssueCardProps {
@@ -22,10 +21,6 @@ export function IssueCard({
   onSelect,
   onStatusChange,
 }: IssueCardProps) {
-  const getStatusColor = (status: string) => {
-    return STATUS_COLORS[status as keyof typeof STATUS_COLORS]
-  }
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -37,21 +32,21 @@ export function IssueCard({
       {/* Header */}
       <div className="flex items-start justify-between mb-2">
         <h3 className="font-semibold text-foreground pr-2">{issue.title}</h3>
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap border ${getStatusColor(
-            issue.status
-          )}`}
-        >
-          {issue.status}
-        </span>
+        <StatusBadge status={issue.status} />
       </div>
 
       {/* Description */}
-      <p className="text-sm text-muted-foreground mb-3">{issue.description}</p>
+      <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{issue.description}</p>
 
       {/* Footer */}
-      <div className="flex items-center gap-3 text-xs flex-wrap">
-        <UrgencyBadge urgency={issue.urgency} />
+      <div className="flex items-center gap-3 text-xs">
+        <span className={`px-2 py-1 rounded border ${
+          issue.urgency === 'Darurat'
+            ? 'bg-red-900/30 text-red-300 border-red-700'
+            : 'bg-green-900/30 text-green-300 border-green-700'
+        }`}>
+          {issue.urgency}
+        </span>
         <span className="text-muted-foreground">{issue.region}</span>
         <span className="text-muted-foreground">{issue.date}</span>
         <span className="ml-auto px-2 py-1 bg-primary/50 rounded text-muted-foreground">

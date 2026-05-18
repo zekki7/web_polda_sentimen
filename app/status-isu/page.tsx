@@ -3,13 +3,20 @@
 import { useEffect, useState } from 'react'
 import { TopNav } from '@/components/top-nav'
 import { ProtectedRoute } from '@/components/protected-route'
+import { PageHeader } from '@/components/status-isu/page-header'
+import { IssuesList } from '@/components/status-isu/issues-list'
+import { StatusSummary } from '@/components/status-isu/status-summary'
+import { ActivitySidebar } from '@/components/status-isu/activity-sidebar'
 import { useAuth } from '@/contexts/auth-context'
+import { Issue } from '@/lib/data/issues-data'
 
 const API_URL = 'http://103.245.38.28/api'
 
 export default function StatusIsuPage() {
   const { token } = useAuth()
-  const [issues, setIssues] = useState<any[]>([])
+  const [issues, setIssues] = useState<Issue[]>([])
+  const [filterStatus, setFilterStatus] = useState<string>('Semua')
+  const [selectedIssue, setSelectedIssue] = useState<number | null>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -21,11 +28,17 @@ export default function StatusIsuPage() {
         })
         const result = await response.json()
         if (result.success && result.data && result.data.data) {
-          // Filter hanya yang darurat
-          const emergencies = result.data.data.filter((item: any) => 
-            item.is_emergency === true || item.is_emergency === 't' || item.is_emergency === 1
-          )
-          setIssues(emergencies)
+          const transformed: Issue[] = result.data.data.map((item: any, idx: number) => ({
+            id: item.id || idx,
+            title: item.main_topic || 'Isu Tanpa Judul',
+            description: item.content || '',
+            status: item.status === 'resolved' ? 'Selesai' : item.status === 'handling' ? 'Sedang Ditangani' : 'Perlu Tindak Lanjut',
+            urgency: item.is_emergency ? 'Darurat' : 'Tidak Darurat',
+            region: item.location || item.region || 'Tidak Diketahui',
+            date: item.posted_at ? new Date(item.posted_at).toLocaleDateString('id-ID') : '-',
+            reportCount: item.report_count || 1,
+          }))
+          setIssues(transformed)
         }
       } catch (err) {
         console.error(err)
@@ -36,31 +49,43 @@ export default function StatusIsuPage() {
     fetchData()
   }, [token])
 
+  const filteredIssues = filterStatus === 'Semua'
+    ? issues
+    : issues.filter(issue => issue.status === filterStatus)
+
+  const handleStatusChange = (id: number, newStatus: Issue['status']) => {
+    setIssues(issues.map(issue =>
+      issue.id === id ? { ...issue, status: newStatus } : issue
+    ))
+  }
+
   return (
     <ProtectedRoute allowedRoles={['super_admin', 'analyst', 'admin', 'officer']}>
       <div className="min-h-screen bg-background">
         <TopNav />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <h1 className="text-3xl font-bold mb-6 text-red-600">🚨 Peringatan Isu Darurat</h1>
+          <PageHeader />
+
           {isLoading ? (
-            <div className="flex justify-center py-20"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div></div>
-          ) : issues.length === 0 ? (
-            <div className="bg-card border rounded-xl p-10 text-center text-muted-foreground">Tidak ada isu darurat saat ini. Aman terkendali.</div>
+            <div className="flex justify-center py-20">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent"></div>
+            </div>
           ) : (
-            <div className="space-y-4">
-              {issues.map((issue, idx) => (
-                <div key={idx} className="bg-red-50 dark:bg-red-900/10 border border-red-200 rounded-xl p-6 shadow-sm">
-                  <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-bold text-red-700">{issue.main_topic || 'Isu Krusial'}</h3>
-                    <span className="text-xs font-semibold bg-red-100 text-red-800 px-2 py-1 rounded">Darurat</span>
-                  </div>
-                  <p className="text-foreground mb-4">{issue.content}</p>
-                  <div className="flex justify-between text-xs text-muted-foreground border-t border-red-100 pt-4">
-                    <span>📍 {issue.location || 'Lokasi tidak terdeteksi'}</span>
-                    <span>🕒 {new Date(issue.posted_at).toLocaleString('id-ID')}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
+                <IssuesList
+                  issues={filteredIssues}
+                  filterStatus={filterStatus}
+                  selectedIssue={selectedIssue}
+                  onFilterChange={setFilterStatus}
+                  onIssueSelect={setSelectedIssue}
+                  onStatusChange={handleStatusChange}
+                />
+              </div>
+
+              <div className="space-y-6">
+                <ActivitySidebar issues={issues} />
+              </div>
             </div>
           )}
         </main>

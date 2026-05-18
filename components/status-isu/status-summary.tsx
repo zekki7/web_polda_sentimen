@@ -7,7 +7,7 @@ interface StatusSummaryProps {
   issues: Issue[]
 }
 
-export function StatusSummary({ issues }: StatusSummaryProps) {
+export function StatusSummary({ issues = [] }: StatusSummaryProps) {
   const summaryData = [
     {
       label: 'Sedang Ditangani',

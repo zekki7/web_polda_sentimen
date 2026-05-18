@@ -1,7 +1,7 @@
 // Komponen daftar isu dengan filter
 'use client'
 
-import { Issue, STATUS_FILTERS } from '@/lib/data/issues-data'
+import { Issue } from '@/lib/data/issues-data'
 import { StatusFilter } from './status-filter'
 import { IssueCard } from './issue-card'
 
@@ -23,8 +23,8 @@ export function IssuesList({
   onStatusChange,
 }: IssuesListProps) {
   return (
-    <div className="bg-card border border-border rounded-lg p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="bg-card border border-border rounded-lg p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <h2 className="text-lg font-semibold text-foreground">Daftar Isu</h2>
         <StatusFilter
           filterStatus={filterStatus}
@@ -46,6 +46,12 @@ export function IssuesList({
           />
         ))}
       </div>
+
+      {issues.length === 0 && (
+        <div className="text-center py-12 text-muted-foreground">
+          Tidak ada isu dengan filter tersebut
+        </div>
+      )}
     </div>
   )
 }

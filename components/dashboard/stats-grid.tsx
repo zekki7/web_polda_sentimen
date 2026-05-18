@@ -42,22 +42,30 @@ export function StatsGrid({ dynamicStats }: StatsGridProps) {
   ]
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {stats.map((stat, idx) => (
-        <motion.div
-          key={idx}
-          variants={itemVariants}
-          className="bg-card border border-border rounded-xl p-6 shadow-sm flex items-center space-x-4"
-        >
-          <div className={`p-4 rounded-lg bg-gradient-to-br ${stat.color} text-white text-2xl`}>
-            {stat.icon}
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">{stat.label}</p>
-            <h3 className="text-2xl font-bold text-foreground">{stat.value}</h3>
+    <motion.div
+      variants={itemVariants}
+      initial="hidden"
+      animate="visible"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+    >
+      {stats.map((stat, index) => (
+        <motion.div key={index} variants={itemVariants}>
+          <div
+            className={`bg-gradient-to-br ${stat.color} rounded-lg p-6 text-white shadow-lg`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className="text-sm font-medium opacity-90">{stat.label}</p>
+                <p className="text-3xl font-bold mt-2">{stat.value}</p>
+              </div>
+              <span className="text-4xl">{stat.icon}</span>
+            </div>
+            <div className="mt-4 pt-4 border-t border-white/20">
+              <p className="text-xs opacity-75">↑ 12% dari minggu lalu</p>
+            </div>
           </div>
         </motion.div>
       ))}
-    </div>
+    </motion.div>
   )
 }

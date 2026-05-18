@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { itemVariants } from '@/lib/animations/variants'
 import { useAuth } from '@/contexts/auth-context'
+import { SentimentChart } from '@/components/sentiment-chart'
 
 const API_URL = 'http://103.245.38.28/api'
 
@@ -42,27 +43,74 @@ export function ChartsSection() {
   const total = sentimentData.positif + sentimentData.negatif + sentimentData.netral || 1
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <motion.div variants={itemVariants} className="bg-card border rounded-xl p-6 shadow-sm">
-        <h3 className="text-lg font-bold mb-4">Distribusi Sentimen</h3>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      {/* Sentiment Trend Chart */}
+      <motion.div
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ delay: 0.4 }}
+        className="lg:col-span-2"
+      >
+        <SentimentChart />
+      </motion.div>
+
+      {/* Sentiment Distribution & Activity */}
+      <motion.div
+        variants={itemVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ delay: 0.5 }}
+        className="bg-card border border-border rounded-lg p-6"
+      >
+        <h2 className="text-lg font-semibold text-foreground mb-4">
+          Distribusi Sentimen
+        </h2>
         <div className="space-y-4">
           <div>
-            <div className="flex justify-between text-sm mb-1">
-              <span>Positif ({sentimentData.positif})</span>
-              <span>{Math.round((sentimentData.positif / total) * 100)}%</span>
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-muted-foreground">Positif</span>
+              <span className="font-semibold text-foreground">{Math.round((sentimentData.positif / total) * 100)}%</span>
             </div>
-            <div className="w-full bg-secondary/20 rounded-full h-2">
-              <div className="bg-green-500 h-2 rounded-full" style={{ width: `${(sentimentData.positif / total) * 100}%` }}></div>
+            <div className="w-full bg-primary/50 rounded-full h-2">
+              <div className="bg-green-500 h-2 rounded-full" style={{ width: `${(sentimentData.positif / total) * 100}%` }} />
             </div>
           </div>
           <div>
-            <div className="flex justify-between text-sm mb-1">
-              <span>Negatif ({sentimentData.negatif})</span>
-              <span>{Math.round((sentimentData.negatif / total) * 100)}%</span>
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-muted-foreground">Netral</span>
+              <span className="font-semibold text-foreground">{Math.round((sentimentData.netral / total) * 100)}%</span>
             </div>
-            <div className="w-full bg-secondary/20 rounded-full h-2">
-              <div className="bg-red-500 h-2 rounded-full" style={{ width: `${(sentimentData.negatif / total) * 100}%` }}></div>
+            <div className="w-full bg-primary/50 rounded-full h-2">
+              <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${(sentimentData.netral / total) * 100}%` }} />
             </div>
+          </div>
+          <div>
+            <div className="flex justify-between text-sm mb-2">
+              <span className="text-muted-foreground">Negatif</span>
+              <span className="font-semibold text-foreground">{Math.round((sentimentData.negatif / total) * 100)}%</span>
+            </div>
+            <div className="w-full bg-primary/50 rounded-full h-2">
+              <div className="bg-red-500 h-2 rounded-full" style={{ width: `${(sentimentData.negatif / total) * 100}%` }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Activity */}
+        <div className="mt-6 pt-6 border-t border-border">
+          <h3 className="text-sm font-semibold text-foreground mb-3">
+            Aktivitas Terakhir
+          </h3>
+          <div className="space-y-2 text-sm">
+            <p className="text-muted-foreground">
+              <span className="text-green-500">✓</span> Login Admin - 5 menit lalu
+            </p>
+            <p className="text-muted-foreground">
+              <span className="text-accent">!</span> Data diperbarui - 2 menit lalu
+            </p>
+            <p className="text-muted-foreground">
+              <span className="text-blue-500">i</span> Report generated - 1 jam lalu
+            </p>
           </div>
         </div>
       </motion.div>

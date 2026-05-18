@@ -7,7 +7,7 @@ interface ActivityLogProps {
   activities: ActivityLogType[]
 }
 
-export function ActivityLog({ activities }: ActivityLogProps) {
+export function ActivityLog({ activities = [] }: ActivityLogProps) {
   return (
     <div className="space-y-4">
       {activities.map((log) => (
