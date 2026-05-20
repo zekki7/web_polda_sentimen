@@ -12,6 +12,7 @@ import { useAuth } from '@/contexts/auth-context'
 
 const API_URL = 'http://103.245.38.28/api'
 
+export const dynamic = 'force-dynamic';
 export default function DashboardPage() {
   const { token } = useAuth()
   const [isLoading, setIsLoading] = useState(true)
@@ -28,7 +29,7 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       if (!token) return;
       try {
-        const response = await fetch(`${API_URL}/crawled-data?limit=100`, {
+        const response = await fetch(`${API_URL}/crawled-data?limit=10000`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',

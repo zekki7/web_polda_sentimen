@@ -1,65 +1,147 @@
-// Halaman Filter Crawling - Analyst Only
+// Halaman Filter Crawling - Analyst, Admin, Superadmin
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { TopNav } from '@/components/top-nav'
 import { ProtectedRoute } from '@/components/protected-route'
+import { useAuth } from '@/contexts/auth-context'
 import { PageHeader } from '@/components/analyst/filters/page-header'
 import { FilterList } from '@/components/analyst/filters/filter-list'
 import { FilterModal } from '@/components/analyst/filters/filter-modal'
-import { mockFilters } from '@/lib/data/rbac-data'
-import type { CrawlingFilter } from '@/lib/data/rbac-data'
+
+const API_URL = 'http://103.245.38.28/api'
 
 export default function FilterCrawlingPage() {
-  const [filters, setFilters] = useState<CrawlingFilter[]>(mockFilters)
+  const { token } = useAuth()
+  const [filters, setFilters] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
   const [showActiveOnly, setShowActiveOnly] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingFilter, setEditingFilter] = useState<CrawlingFilter | null>(null)
+  const [editingFilter, setEditingFilter] = useState<any | null>(null)
 
-  const displayedFilters = showActiveOnly
-    ? filters.filter((f) => f.is_active)
-    : filters
+  // Fetch Filter
+  const fetchFilters = async () => {
+    if (!token) return
+    setIsLoading(true)
+    try {
+      const response = await fetch(`${API_URL}/filters`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      })
+      const result = await response.json()
+      if (result.success && result.data) {
+        setFilters(result.data)
+      }
+    } catch (error) {
+      console.error('Gagal memuat filter:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchFilters()
+  }, [token])
 
   const handleAdd = () => {
     setEditingFilter(null)
     setIsModalOpen(true)
   }
 
-  const handleEdit = (filter: CrawlingFilter) => {
+  const handleEdit = (filter: any) => {
     setEditingFilter(filter)
     setIsModalOpen(true)
   }
 
-  const handleSave = (filter: CrawlingFilter) => {
-    if (editingFilter) {
-      // Update existing
-      setFilters(filters.map((f) => (f.id === filter.id ? filter : f)))
-    } else {
-      // Add new
-      setFilters([...filters, { ...filter, id: Date.now() }])
+  // Simpan / Update Filter
+  const handleSave = async (filter: any) => {
+    if (!token) return
+    const isEdit = !!editingFilter
+    const url = isEdit ? `${API_URL}/filters/${editingFilter.id}` : `${API_URL}/filters`
+    const method = isEdit ? 'PUT' : 'POST'
+
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify(filter),
+      })
+
+      const result = await response.json()
+      if (response.ok && result.success) {
+        if (isEdit) {
+          setFilters(filters.map((f) => (f.id === editingFilter.id ? result.data : f)))
+        } else {
+          setFilters([result.data, ...filters])
+        }
+        setIsModalOpen(false)
+      }
+    } catch (error) {
+      console.error('Gagal menyimpan filter:', error)
     }
-    setIsModalOpen(false)
   }
 
-  const handleDelete = (id: number) => {
-    if (confirm('Hapus filter ini?')) {
-      setFilters(filters.filter((f) => f.id !== id))
+  // Hapus Filter
+  const handleDelete = async (id: number) => {
+    if (!token || !confirm('Hapus kriteria filter crawling ini?')) return
+    try {
+      const response = await fetch(`${API_URL}/filters/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+        },
+      })
+
+      if (response.ok) {
+        setFilters(filters.filter((f) => f.id !== id))
+      }
+    } catch (error) {
+      console.error('Gagal menghapus filter:', error)
     }
   }
 
-  const handleToggle = (id: number) => {
-    setFilters(
-      filters.map((f) =>
-        f.id === id ? { ...f, is_active: !f.is_active } : f
-      )
-    )
+  // Toggle Status
+  const handleToggle = async (id: number) => {
+    if (!token) return
+    const targetFilter = filters.find((f) => f.id === id)
+    if (!targetFilter) return
+
+    try {
+      const response = await fetch(`${API_URL}/filters/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({ is_active: !targetFilter.is_active }),
+      })
+
+      if (response.ok) {
+        setFilters(
+          filters.map((f) => (f.id === id ? { ...f, is_active: !f.is_active } : f))
+        )
+      }
+    } catch (error) {
+      console.error('Gagal mengubah status aktif:', error)
+    }
   }
+
+  const displayedFilters = showActiveOnly
+    ? filters.filter((f) => f.is_active)
+    : filters
 
   return (
-    <ProtectedRoute allowedRoles={['analyst', 'super_admin']}>
+    <ProtectedRoute allowedRoles={['analyst', 'superadmin', 'admin']}>
       <div className="min-h-screen bg-background">
         <TopNav />
-
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <PageHeader
             onAdd={handleAdd}
@@ -67,12 +149,18 @@ export default function FilterCrawlingPage() {
             onToggleFilter={setShowActiveOnly}
           />
 
-          <FilterList
-            filters={displayedFilters}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onToggle={handleToggle}
-          />
+          {isLoading ? (
+            <div className="flex justify-center py-10">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent"></div>
+            </div>
+          ) : (
+            <FilterList
+              filters={displayedFilters}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onToggle={handleToggle}
+            />
+          )}
 
           {isModalOpen && (
             <FilterModal
