@@ -17,30 +17,33 @@ export function TopNav() {
   const profileDropdownRef = useRef<HTMLDivElement>(null)
 
   // Define menu items berdasarkan role
-  const getMenuItems = () => {
-    const baseItems = [
-      { href: '/dashboard', label: 'Dashboard', roles: ['super_admin', 'analyst', 'user'] },
-      { href: '/analisis', label: 'Analisis Wilayah', roles: ['super_admin', 'analyst', 'user'] },
-    ]
+ const getMenuItems = () => {
+  const baseItems = [
+    { href: '/dashboard', label: 'Dashboard', roles: ['super_admin', 'analyst', 'officer', 'admin'] },
+    { href: '/analisis', label: 'Analisis Wilayah', roles: ['super_admin', 'analyst', 'officer', 'admin'] },
+  ]
 
-    const statusIsuItem = {
-      href: '/status-isu',
-      label: 'Status Isu',
-      roles: ['super_admin', 'analyst'],
-    }
-
-    const adminItems = [
-      { href: '/admin/users', label: 'Manajemen Pengguna', roles: ['super_admin'] },
-      { href: '/admin/audit-log', label: 'Audit Log', roles: ['super_admin'] },
-    ]
-
-    const analystItems = [
-      { href: '/analyst/filters', label: 'Filter Crawling', roles: ['analyst'] },
-      { href: '/analyst/validation', label: 'Validasi Sentiment', roles: ['analyst'] },
-    ]
-
-    return [...baseItems, statusIsuItem, ...adminItems, ...analystItems]
+  const statusIsuItem = {
+    href: '/status-isu',
+    label: 'Status Isu',
+    roles: ['super_admin', 'analyst', 'admin'], // officer tidak bisa
   }
+
+  const userManagementItem = {
+    href: '/admin/users',
+    label: 'Manajemen Pengguna',
+    roles: ['super_admin', 'admin'], // super_admin pakai route /admin/users juga
+  }
+
+  // Khusus super_admin: audit log, filter, validasi
+  const superAdminOnlyItems = [
+    { href: '/admin/audit-log', label: 'Audit Log', roles: ['super_admin'] },
+    { href: '/analyst/filters', label: 'Filter Crawling', roles: ['super_admin', 'analyst'] },
+    { href: '/analyst/validation', label: 'Validasi Sentiment', roles: ['super_admin', 'analyst'] },
+  ]
+
+  return [...baseItems, statusIsuItem, userManagementItem, ...superAdminOnlyItems]
+}
 
   const menuItems = getMenuItems()
 
@@ -84,8 +87,10 @@ export function TopNav() {
         return 'Super Admin'
       case 'analyst':
         return 'Analyst'
-      case 'user':
-        return 'User'
+      case 'officer':
+        return 'Officer'
+      case 'admin':
+        return 'Admin'
       default:
         return role
     }
@@ -115,7 +120,7 @@ export function TopNav() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-2 overflow-x-auto">
             {visibleItems.map((item) => (
               <Link
                 key={item.href}

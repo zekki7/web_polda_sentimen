@@ -70,7 +70,7 @@ export default function AnalisisWilayahPage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={['super_admin', 'analyst', 'admin']}>
+    <ProtectedRoute allowedRoles={['super_admin', 'analyst', 'admin', 'officer']}>
       <div className="min-h-screen bg-background">
         <TopNav />
 

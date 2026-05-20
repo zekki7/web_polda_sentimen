@@ -11,8 +11,8 @@ interface UserTableProps {
   users: UserManagement[]
   filterStatus: 'all' | 'active' | 'inactive'
   onFilterChange: (status: 'all' | 'active' | 'inactive') => void
-  onRoleChange: (userId: number, newRole: UserRole) => void
-  onStatusToggle: (userId: number) => void
+  onRoleChange: (userId: string, newRole: UserRole) => void   // ← number → string
+  onStatusToggle: (userId: string) => void                    // ← number → string
   onAddUser?: () => void
   onDeleteUser?: () => void
   selectedUserIds: Set<string>

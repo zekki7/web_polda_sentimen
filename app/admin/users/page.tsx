@@ -1,26 +1,38 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { Toaster, toast } from 'sonner'
 import { TopNav } from '@/components/top-nav'
 import { ProtectedRoute } from '@/components/protected-route'
 import { PageHeader } from '@/components/admin/user-management/page-header'
 import { UserTable } from '@/components/admin/user-management/user-table'
 import { AddUserModal, NewUserData } from '@/components/admin/user-management/add-user-modal'
-import { useAuth } from '@/contexts/auth-context'
+import { useAuth, UserRole } from '@/contexts/auth-context'
+import type { UserManagement } from '@/lib/data/rbac-data'
 
 const API_URL = 'http://103.245.38.28/api'
 const LOCAL_STORAGE_KEY = 'sentinel_users'
 
-// Mock data fallback kalau API error
-const MOCK_USERS = [
-  { id: '1', name: 'Admin Utama', nrp: '1234567890', email: 'admin@polda.jateng.go.id', role: 'super_admin', region_code: 'JATENG', status: 'active', created_at: '2024-01-01', last_login: '2024-02-21 08:30' },
+// Taruh interface di luar komponen
+interface UserItem {
+  id: string
+  name: string
+  nrp: string
+  email: string
+  role: UserRole
+  region_code: string
+  status: 'active' | 'inactive'
+  created_at: string
+  last_login: string
+}
+
+const MOCK_USERS: UserItem[] = [
+  { id: '1', name: 'Admin Utama', nrp: '1234567890', email: 'admin@polda.jateng.go.id', role: 'admin', region_code: 'JATENG', status: 'active', created_at: '2024-01-01', last_login: '2024-02-21 08:30' },
   { id: '2', name: 'Analis Data Semarang', nrp: '0987654321', email: 'analyst1@polda.jateng.go.id', role: 'analyst', region_code: 'SEMARANG', status: 'active', created_at: '2024-01-15', last_login: '2024-02-21 07:15' },
   { id: '3', name: 'Analis Data Surakarta', nrp: '1122334455', email: 'analyst2@polda.jateng.go.id', role: 'analyst', region_code: 'SURAKARTA', status: 'active', created_at: '2024-01-20', last_login: '2024-02-20 16:45' },
-  { id: '4', name: 'Petugas Lapangan Semarang', nrp: '5555555555', email: 'petugas1@polda.jateng.go.id', role: 'user', region_code: 'SEMARANG', status: 'active', created_at: '2024-02-01', last_login: '2024-02-21 09:00' },
-  { id: '5', name: 'Petugas Lapangan Salatiga', nrp: '6666666666', email: 'petugas2@polda.jateng.go.id', role: 'user', region_code: 'SALATIGA', status: 'active', created_at: '2024-02-05', last_login: '2024-02-20 14:20' },
-  { id: '6', name: 'Petugas Non-Aktif', nrp: '7777777777', email: 'inactive@polda.jateng.go.id', role: 'user', region_code: 'PEKALONGAN', status: 'inactive', created_at: '2023-12-01', last_login: '2024-01-15 10:30' },
+  { id: '4', name: 'Petugas Lapangan Semarang', nrp: '5555555555', email: 'petugas1@polda.jateng.go.id', role: 'officer', region_code: 'SEMARANG', status: 'active', created_at: '2024-02-01', last_login: '2024-02-21 09:00' },
+  { id: '5', name: 'Petugas Lapangan Salatiga', nrp: '6666666666', email: 'petugas2@polda.jateng.go.id', role: 'officer', region_code: 'SALATIGA', status: 'active', created_at: '2024-02-05', last_login: '2024-02-20 14:20' },
+  { id: '6', name: 'Petugas Non-Aktif', nrp: '7777777777', email: 'inactive@polda.jateng.go.id', role: 'officer', region_code: 'PEKALONGAN', status: 'inactive', created_at: '2023-12-01', last_login: '2024-01-15 10:30' },
 ]
 
 export default function UserManagementPage() {
@@ -33,20 +45,13 @@ export default function UserManagementPage() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
-  interface UserItem {
-    id: string
-    name: string
-    nrp: string
-    email: string
-    role: string
-    region_code: string
-    status: string
-    created_at: string
-    last_login: string
+  const saveUsersToStorage = (userList: UserItem[]) => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(userList))
+    }
   }
 
-  // Load users from localStorage or use mock data
-  const loadUsers = () => {
+  const loadUsers = (): boolean => {
     if (typeof window !== 'undefined') {
       const savedUsers = localStorage.getItem(LOCAL_STORAGE_KEY)
       if (savedUsers) {
@@ -58,13 +63,6 @@ export default function UserManagementPage() {
     return false
   }
 
-  // Save users to localStorage
-  const saveUsersToStorage = (userList: UserItem[]) => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(userList))
-    }
-  }
-
   const fetchUsers = async () => {
     try {
       const response = await fetch(`${API_URL}/users`, {
@@ -73,20 +71,17 @@ export default function UserManagementPage() {
           'Accept': 'application/json',
         },
       })
-
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`)
-      }
+      if (!response.ok) throw new Error(`HTTP ${response.status}`)
 
       const data = await response.json()
-      const transformed = (data.data || []).map((user: any) => ({
-        id: user.id,
+      const transformed: UserItem[] = (data.data || []).map((user: any) => ({
+        id: String(user.id),
         name: user.name,
         nrp: user.nrp,
         email: user.email,
-        role: user.role,
-        region_code: user.region_code,
-        status: user.is_active ? 'active' : 'inactive',
+        role: user.role as UserRole,
+        region_code: user.region_code ?? '',
+        status: (user.is_active ? 'active' : 'inactive') as 'active' | 'inactive',
         created_at: user.created_at?.split('T')[0] || '-',
         last_login: user.last_login_at
           ? new Date(user.last_login_at).toLocaleString('id-ID')
@@ -97,7 +92,6 @@ export default function UserManagementPage() {
     } catch (err) {
       console.warn('API error, checking local storage:', err)
       if (!loadUsers()) {
-        // First time - use mock data and save to localStorage
         setUsers(MOCK_USERS)
         saveUsersToStorage(MOCK_USERS)
       }
@@ -110,21 +104,21 @@ export default function UserManagementPage() {
     if (token) fetchUsers()
   }, [token])
 
-  const filteredUsers = users.filter((user: any) => {
-    // Status filter
+  const filteredUsers = users.filter((user) => {
     if (filterStatus !== 'all' && user.status !== filterStatus) return false
-
-    // Search filter (NRP, nama, email)
     if (searchQuery) {
-      const query = searchQuery.toLowerCase()
-      const matchNrp = user.nrp.toLowerCase().includes(query)
-      const matchName = user.name.toLowerCase().includes(query)
-      const matchEmail = user.email.toLowerCase().includes(query)
-      if (!matchNrp && !matchName && !matchEmail) return false
+      const q = searchQuery.toLowerCase()
+      if (
+        !user.nrp.toLowerCase().includes(q) &&
+        !user.name.toLowerCase().includes(q) &&
+        !user.email.toLowerCase().includes(q)
+      ) return false
     }
-
     return true
   })
+
+  // Cast ke UserManagement supaya kompatibel dengan UserTable
+  const filteredAsUserManagement = filteredUsers as unknown as UserManagement[]
 
   const handleAddUser = (newUser: NewUserData) => {
     const userItem: UserItem = {
@@ -132,30 +126,24 @@ export default function UserManagementPage() {
       name: newUser.name,
       nrp: newUser.nrp,
       email: newUser.email,
-      role: newUser.role,
+      role: newUser.role as UserRole,
       region_code: newUser.region_code,
       status: 'active',
       created_at: new Date().toISOString().split('T')[0],
       last_login: '-',
     }
-
     const updatedUsers = [userItem, ...users]
     setUsers(updatedUsers)
     saveUsersToStorage(updatedUsers)
-
     toast.success(`User "${newUser.name}" berhasil ditambahkan`, {
       description: `NRP: ${newUser.nrp} | Role: ${newUser.role}`,
     })
   }
 
-  const handleRoleChange = async (userId: string, newRole: string) => {
-    // Optimistic update
-    const updatedUsers = users.map(u =>
-      u.id === userId ? { ...u, role: newRole } : u
-    )
+  const handleRoleChange = async (userId: string, newRole: UserRole) => {
+    const updatedUsers = users.map(u => u.id === userId ? { ...u, role: newRole } : u)
     setUsers(updatedUsers)
     saveUsersToStorage(updatedUsers)
-
     try {
       await fetch(`${API_URL}/users/${userId}`, {
         method: 'PUT',
@@ -172,17 +160,12 @@ export default function UserManagementPage() {
   }
 
   const handleStatusToggle = async (userId: string) => {
-    const user = users.find((u: any) => u.id === userId) as any
+    const user = users.find(u => u.id === userId)
     if (!user) return
-
-    // Optimistic update
-    const newStatus = user.status === 'active' ? 'inactive' : 'active'
-    const updatedUsers = users.map(u =>
-      u.id === userId ? { ...u, status: newStatus } : u
-    )
+    const newStatus: 'active' | 'inactive' = user.status === 'active' ? 'inactive' : 'active'
+    const updatedUsers = users.map(u => u.id === userId ? { ...u, status: newStatus } : u)
     setUsers(updatedUsers)
     saveUsersToStorage(updatedUsers)
-
     try {
       await fetch(`${API_URL}/users/${userId}`, {
         method: 'PUT',
@@ -191,7 +174,7 @@ export default function UserManagementPage() {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: JSON.stringify({ is_active: newStatus !== 'active' }),
+        body: JSON.stringify({ is_active: newStatus === 'active' }),
       })
     } catch (err) {
       console.warn('Status toggle API failed, using local state')
@@ -199,20 +182,12 @@ export default function UserManagementPage() {
   }
 
   const handleSelectAll = (checked: boolean) => {
-    if (checked) {
-      setSelectedUserIds(new Set(filteredUsers.map(u => u.id)))
-    } else {
-      setSelectedUserIds(new Set())
-    }
+    setSelectedUserIds(checked ? new Set(filteredUsers.map(u => u.id)) : new Set())
   }
 
   const handleSelectUser = (userId: string, checked: boolean) => {
     const newSelected = new Set(selectedUserIds)
-    if (checked) {
-      newSelected.add(userId)
-    } else {
-      newSelected.delete(userId)
-    }
+    checked ? newSelected.add(userId) : newSelected.delete(userId)
     setSelectedUserIds(newSelected)
   }
 
@@ -231,7 +206,7 @@ export default function UserManagementPage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={['super_admin']}>
+    <ProtectedRoute allowedRoles={['super_admin', 'admin']}>
       <div className="min-h-screen bg-background">
         <TopNav />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -242,7 +217,7 @@ export default function UserManagementPage() {
             </div>
           ) : (
             <UserTable
-              users={filteredUsers}
+              users={filteredAsUserManagement}
               filterStatus={filterStatus}
               onFilterChange={setFilterStatus}
               onRoleChange={handleRoleChange}
@@ -275,7 +250,6 @@ export default function UserManagementPage() {
           onAdd={handleAddUser}
         />
 
-        {/* Delete Confirmation Modal */}
         {deleteConfirmOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center">
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setDeleteConfirmOpen(false)} />

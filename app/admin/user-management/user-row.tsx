@@ -10,8 +10,8 @@ import type { UserRole } from '@/contexts/auth-context'
 interface UserRowProps {
   user: UserManagement
   index: number
-  onRoleChange: (userId: number, newRole: UserRole) => void
-  onStatusToggle: (userId: number) => void
+  onRoleChange: (userId: string, newRole: UserRole) => void
+  onStatusToggle: (userId: string) => void
 }
 
 export function UserRow({ user, index, onRoleChange, onStatusToggle }: UserRowProps) {

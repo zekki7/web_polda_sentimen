@@ -83,7 +83,7 @@ export default function SentimentValidationPage() {
   }
 
   return (
-    <ProtectedRoute allowedRoles={['analyst']}>
+    <ProtectedRoute allowedRoles={['analyst', 'super_admin']}>
       <div className="min-h-screen bg-background">
         <TopNav />
 

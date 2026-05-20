@@ -1,7 +1,7 @@
 'use client'
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-export type UserRole = 'super_admin' | 'analyst' | 'user' | 'officer' | 'admin'
+export type UserRole = 'super_admin' | 'analyst'  | 'officer' | 'admin'
 
 export interface User {
   id: string
