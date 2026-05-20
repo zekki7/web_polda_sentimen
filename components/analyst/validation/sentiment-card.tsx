@@ -55,14 +55,6 @@ export function SentimentCard({
         </p>
       </div>
 
-      {/* Platform & Posted Date */}
-      <div className="flex items-center gap-4 text-xs text-muted-foreground mb-4">
-        <span className="px-2 py-1 bg-purple-900/30 text-purple-300 rounded">
-          {sentiment.platform}
-        </span>
-        <span>{sentiment.posted_at}</span>
-        <span>Post ID: {sentiment.post_id}</span>
-      </div>
 
       {/* AI Analysis */}
       <div className="bg-primary/30 rounded-lg p-4 mb-4">
