@@ -23,9 +23,6 @@ export function StatsCard({ label, value, icon, color }: StatsCardProps) {
         </div>
         <span className="text-4xl">{icon}</span>
       </div>
-      <div className="mt-4 pt-4 border-t border-white/20">
-        <p className="text-xs opacity-75">↑ 12% dari minggu lalu</p>
-      </div>
     </motion.div>
   )
 }

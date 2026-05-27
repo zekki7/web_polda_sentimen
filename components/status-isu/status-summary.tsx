@@ -27,7 +27,7 @@ export function StatusSummary({ issues = [] }: StatusSummaryProps) {
   ]
 
   return (
-    <div className="mt-6 pt-6 border-t border-border space-y-3">
+    <div className="space-y-3">
       {summaryData.map((item, index) => (
         <div key={index} className="bg-primary/50 rounded-lg p-3">
           <p className="text-xs text-muted-foreground mb-1">{item.label}</p>

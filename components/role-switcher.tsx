@@ -4,25 +4,23 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useMockLogin } from '@/contexts/auth-context'
 import { useAuth } from '@/contexts/auth-context'
 import type { UserRole } from '@/contexts/auth-context'
 
 export function RoleSwitcher() {
   const [isOpen, setIsOpen] = useState(false)
-  const { loginAs } = useMockLogin()
-  const { user } = useAuth()
+  const { user, devLoginAs } = useAuth()
 
   const roles: Array<{ value: UserRole; label: string; emoji: string }> = [
     { value: 'super_admin', label: 'Super Admin', emoji: '👑' },
     { value: 'analyst', label: 'Analyst', emoji: '🔬' },
-    { value: 'user', label: 'User', emoji: '👤' },
+    { value: 'officer', label: 'Officer', emoji: '👮' },
+    { value: 'admin', label: 'Admin', emoji: '🛡️' },
   ]
 
-  const handleSwitch = (role: UserRole) => {
-    loginAs(role)
+  const handleSwitch = async (role: UserRole) => {
+    await devLoginAs(role)
     setIsOpen(false)
-    // Reload page untuk apply changes
     window.location.reload()
   }
 
@@ -68,7 +66,7 @@ export function RoleSwitcher() {
             </div>
             <div className="p-2 border-t border-border bg-primary/20">
               <p className="text-xs text-muted-foreground text-center">
-                Current: {user?.name}
+                Current: {user?.name} ({user?.role})
               </p>
             </div>
           </motion.div>

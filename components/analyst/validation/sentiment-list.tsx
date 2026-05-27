@@ -19,7 +19,7 @@ export function SentimentList({
   onEdit,
 }: SentimentListProps) {
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4 overflow-hidden min-w-0">
       {sentiments.map((sentiment, index) => (
         <SentimentCard
           key={sentiment.id}

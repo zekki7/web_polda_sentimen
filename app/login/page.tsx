@@ -102,7 +102,7 @@ export default function LoginPage() {
           </form>
         </div>
         <div className="text-center mt-8 text-xs text-muted-foreground">
-          <p>© 2024 POLDA Jawa Tengah</p>
+          <p>© 2026 POLDA Jawa Tengah</p>
           <p>Sistem Internal - Akses Terotorisasi</p>
         </div>
       </div>
