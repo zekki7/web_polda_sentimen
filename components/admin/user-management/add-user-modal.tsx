@@ -14,7 +14,7 @@ export interface NewUserData {
   name: string
   nrp: string
   email: string
-  role: 'super_admin' | 'analyst' | 'user'
+  role: 'super_admin' | 'analyst' | 'admin' | 'officer'
   region_code: string
 }
 
@@ -23,14 +23,14 @@ export function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalProps) {
     name: '',
     nrp: '',
     email: '',
-    role: 'user',
+    role: 'officer',
     region_code: '',
   })
   const [errors, setErrors] = useState<Partial<Record<keyof NewUserData, string>>>({})
 
   useEffect(() => {
     if (!isOpen) {
-      setFormData({ name: '', nrp: '', email: '', role: 'user', region_code: '' })
+      setFormData({ name: '', nrp: '', email: '', role: 'officer', region_code: '' })
       setErrors({})
     }
   }, [isOpen])
@@ -172,7 +172,8 @@ export function AddUserModal({ isOpen, onClose, onAdd }: AddUserModalProps) {
             >
               <option value="super_admin">Super Admin</option>
               <option value="analyst">Analyst</option>
-              <option value="user">User</option>
+              <option value="admin">Admin</option>
+              <option value="officer">Officer</option>
             </select>
           </div>
 

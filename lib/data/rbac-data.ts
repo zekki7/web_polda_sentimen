@@ -96,15 +96,17 @@ export const mockAuditLogs: AuditLog[] = [
 
 export interface CrawlingFilter {
   id: number
-  name: string
-  keywords: string[]
-  platforms: string[]
-  regions: string[]
-  date_start?: string
-  date_end?: string
+  keyword: string        // ← tambah ini
+  platform: string       // ← tambah ini
   is_active: boolean
-  created_by: string
   created_at: string
+  updated_at?: string
+  // opsional backward compat
+  name?: string
+  keywords?: string[]
+  platforms?: string[]
+  regions?: string[]
+  created_by?: string
 }
 
 export const mockFilters: CrawlingFilter[] = [

@@ -57,35 +57,47 @@ export default function FilterCrawlingPage() {
 
   // Simpan / Update Filter
   const handleSave = async (filter: any) => {
-    if (!token) return
-    const isEdit = !!editingFilter
-    const url = isEdit ? `${API_URL}/filters/${editingFilter.id}` : `${API_URL}/filters`
-    const method = isEdit ? 'PUT' : 'POST'
+  if (!token) return
+  const isEdit = !!editingFilter
+  const url = isEdit ? `${API_URL}/filters/${editingFilter.id}` : `${API_URL}/filters`
+  const method = isEdit ? 'PUT' : 'POST'
 
-    try {
-      const response = await fetch(url, {
-        method: method,
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify(filter),
-      })
+  console.log('filter dari form:', filter) // ← tambah ini
 
-      const result = await response.json()
-      if (response.ok && result.success) {
-        if (isEdit) {
-          setFilters(filters.map((f) => (f.id === editingFilter.id ? result.data : f)))
-        } else {
-          setFilters([result.data, ...filters])
-        }
-        setIsModalOpen(false)
-      }
-    } catch (error) {
-      console.error('Gagal menyimpan filter:', error)
-    }
+  // Sesuaikan payload dengan yang diexpect API
+  const payload = {
+    keyword: Array.isArray(filter.keywords) ? filter.keywords.join(',') : filter.keyword,
+    platform: Array.isArray(filter.platforms) ? filter.platforms.join(',') : filter.platform,
+    is_active: filter.is_active ?? true,
   }
+  console.log('payload yang dikirim:', payload) // ← dan ini
+
+  try {
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: JSON.stringify(payload), // ← kirim payload yang sudah disesuaikan
+    })
+
+    const result = await response.json()
+    if (response.ok && result.success) {
+      if (isEdit) {
+        setFilters(filters.map((f) => (f.id === editingFilter.id ? result.data : f)))
+      } else {
+        setFilters([result.data, ...filters])
+      }
+      setIsModalOpen(false)
+    } else {
+      console.error('Gagal simpan:', result)
+    }
+  } catch (error) {
+    console.error('Gagal menyimpan filter:', error)
+  }
+}
 
   // Hapus Filter
   const handleDelete = async (id: number) => {

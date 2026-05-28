@@ -83,10 +83,10 @@ export function SentimentCard({
             </p>
             <span
               className={`text-2xl font-bold ${getConfidenceColor(
-                sentiment.confidence_score
+                sentiment.confidence_score || 0
               )}`}
             >
-              {sentiment.confidence_score}%
+              {sentiment.confidence_score || 0}%
             </span>
           </div>
 
@@ -102,7 +102,7 @@ export function SentimentCard({
           <div>
             <p className="text-xs text-muted-foreground mb-1">Keywords:</p>
             <div className="flex flex-wrap gap-1">
-              {sentiment.keywords.map((keyword, i) => (
+              {(sentiment.keywords ?? []).map((keyword, i) => (
                 <span
                   key={i}
                   className="px-2 py-0.5 bg-orange-900/30 text-orange-300 rounded text-xs"
@@ -117,7 +117,7 @@ export function SentimentCard({
         {/* Region */}
         <div className="mt-3 pt-3 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            📍 Wilayah: <span className="text-foreground">{sentiment.region}</span>
+            📍 Wilayah: <span className="text-foreground">{sentiment.location || 'N/A'}</span>
           </p>
         </div>
       </div>

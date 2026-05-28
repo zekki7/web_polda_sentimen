@@ -66,18 +66,21 @@ export function FilterForm({ filter, onSave, onCancel }: FilterFormProps) {
   }
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    onSave({
-      id: filter?.id || Date.now(),
-      name: formData.name!,
-      keywords: formData.keywords!,
-      platforms: formData.platforms!,
-      regions: formData.regions!,
-      is_active: formData.is_active!,
-      created_by: formData.created_by!,
-      created_at: formData.created_at!,
-    })
-  }
+  e.preventDefault()
+  onSave({
+    id: filter?.id || Date.now(),
+    keyword: (formData.keywords ?? []).join(','),   // ← array → string
+    platform: (formData.platforms ?? []).join(','), // ← array → string
+    is_active: formData.is_active ?? true,
+    created_by: formData.created_by ?? 'Current User',
+    created_at: formData.created_at ?? new Date().toISOString().split('T')[0],
+    // tetap simpan array untuk keperluan form edit
+    keywords: formData.keywords,
+    platforms: formData.platforms,
+    regions: formData.regions,
+    name: formData.name,
+  } as CrawlingFilter)
+}
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

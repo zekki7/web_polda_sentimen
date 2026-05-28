@@ -1,4 +1,3 @@
-// Card untuk menampilkan satu filter
 "use client";
 
 import { motion } from "framer-motion";
@@ -12,13 +11,10 @@ interface FilterCardProps {
   onToggle: () => void;
 }
 
-export function FilterCard({
-  filter,
-  index,
-  onEdit,
-  onDelete,
-  onToggle,
-}: FilterCardProps) {
+export function FilterCard({ filter, index, onEdit, onDelete, onToggle }: FilterCardProps) {
+  const keywords = filter.keyword?.split(',').map((k: string) => k.trim()).filter(Boolean) ?? []
+  const platforms = filter.platform?.split(',').map((p: string) => p.trim()).filter(Boolean) ?? []
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.95 }}
@@ -28,16 +24,14 @@ export function FilterCard({
         filter.is_active ? "border-accent" : "border-border opacity-60"
       }`}
     >
-      {/* Header dengan nama dan status */}
+      {/* Header */}
       <div className="flex items-start justify-between mb-4">
-        <h3 className="font-semibold text-foreground text-lg">{filter.name}</h3>
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-semibold ${
-            filter.is_active
-              ? "bg-green-900/30 text-green-300"
-              : "bg-gray-900/30 text-gray-300"
-          }`}
-        >
+        <h3 className="font-semibold text-foreground text-lg">
+          {filter.name ?? filter.keyword ?? '-'}
+        </h3>
+        <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+          filter.is_active ? "bg-green-900/30 text-green-300" : "bg-gray-900/30 text-gray-300"
+        }`}>
           {filter.is_active ? "Aktif" : "Non-Aktif"}
         </span>
       </div>
@@ -46,36 +40,34 @@ export function FilterCard({
       <div className="mb-3">
         <p className="text-xs text-muted-foreground mb-2">Keywords:</p>
         <div className="flex flex-wrap gap-2">
-          {filter.keywords.map((keyword, i) => (
-            <span
-              key={i}
-              className="px-2 py-1 bg-blue-900/30 text-blue-300 rounded text-xs"
-            >
+          {keywords.length > 0 ? keywords.map((keyword, i) => (
+            <span key={i} className="px-2 py-1 bg-blue-900/30 text-blue-300 rounded text-xs">
               {keyword}
             </span>
-          ))}
+          )) : (
+            <span className="text-xs text-muted-foreground">-</span>
+          )}
         </div>
       </div>
 
-      {/* Regions */}
+      {/* Platform */}
       <div className="mb-4">
-        <p className="text-xs text-muted-foreground mb-2">Wilayah:</p>
+        <p className="text-xs text-muted-foreground mb-2">Platform:</p>
         <div className="flex flex-wrap gap-2">
-          {filter.regions.map((region, i) => (
-            <span
-              key={i}
-              className="px-2 py-1 bg-orange-900/30 text-orange-300 rounded text-xs"
-            >
-              {region}
+          {platforms.length > 0 ? platforms.map((platform, i) => (
+            <span key={i} className="px-2 py-1 bg-orange-900/30 text-orange-300 rounded text-xs">
+              {platform}
             </span>
-          ))}
+          )) : (
+            <span className="text-xs text-muted-foreground">-</span>
+          )}
         </div>
       </div>
 
-      {/* Footer dengan info dan actions */}
+      {/* Footer */}
       <div className="pt-4 border-t border-border">
         <div className="text-xs text-muted-foreground mb-3">
-          <p>Dibuat oleh: {filter.created_by}</p>
+          {filter.created_by && <p>Dibuat oleh: {filter.created_by}</p>}
           <p>Tanggal: {filter.created_at}</p>
         </div>
 
