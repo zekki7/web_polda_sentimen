@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/analyst/filters/page-header'
 import { FilterList } from '@/components/analyst/filters/filter-list'
 import { FilterModal } from '@/components/analyst/filters/filter-modal'
 
-const API_URL = 'http://103.245.38.28/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://103.245.38.28/api'
 
 export default function FilterCrawlingPage() {
   const { token } = useAuth()
@@ -139,7 +139,7 @@ export default function FilterCrawlingPage() {
     : filters
 
   return (
-    <ProtectedRoute allowedRoles={['analyst', 'superadmin', 'admin']}>
+    <ProtectedRoute allowedRoles={['analyst', 'super_admin', 'admin']}>
       <div className="min-h-screen bg-background">
         <TopNav />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

@@ -19,7 +19,7 @@ import {
 } from 'recharts'
 import { useAuth } from '@/contexts/auth-context'
 
-const API_URL = 'http://103.245.38.28/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://103.245.38.28/api'
 
 const COLORS = ['#ef4444', '#f97316', '#3b82f6', '#22c55e', '#8b5cf6', '#ec4899']
 

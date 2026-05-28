@@ -10,7 +10,7 @@ import { ActivitySidebar } from '@/components/status-isu/activity-sidebar'
 import { useAuth } from '@/contexts/auth-context'
 import { Issue } from '@/lib/data/issues-data'
 
-const API_URL = 'http://103.245.38.28/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://103.245.38.28/api'
 
 export default function StatusIsuPage() {
   const { token } = useAuth()

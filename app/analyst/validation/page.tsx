@@ -9,7 +9,7 @@ import { PageHeader } from '@/components/analyst/validation/page-header'
 import { SentimentList } from '@/components/analyst/validation/sentiment-list'
 import { SentimentFilters } from '@/components/analyst/validation/sentiment-filters'
 
-const API_URL = 'http://103.245.38.28/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://103.245.38.28/api'
 
 export default function SentimentValidationPage() {
   const { token, user } = useAuth()
@@ -135,7 +135,7 @@ export default function SentimentValidationPage() {
   })
 
   return (
-    <ProtectedRoute allowedRoles={['analyst', 'superadmin', 'admin']}>
+    <ProtectedRoute allowedRoles={['analyst', 'super_admin', 'admin']}>
       <div className="min-h-screen bg-background">
         <TopNav />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

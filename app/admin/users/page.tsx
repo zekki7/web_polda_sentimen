@@ -10,7 +10,7 @@ import { AddUserModal, NewUserData } from '@/components/admin/user-management/ad
 import { useAuth, UserRole } from '@/contexts/auth-context'
 import type { UserManagement } from '@/lib/data/rbac-data'
 
-const API_URL = 'http://103.245.38.28/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://103.245.38.28/api'
 const LOCAL_STORAGE_KEY = 'sentinel_users'
 
 // Taruh interface di luar komponen

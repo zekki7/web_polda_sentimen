@@ -10,7 +10,7 @@ import { MapSummary } from '@/components/map-summary'
 import { itemVariants } from '@/lib/animations/variants'
 import { useAuth } from '@/contexts/auth-context'
 
-const API_URL = 'http://103.245.38.28/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://103.245.38.28/api'
 
 export const dynamic = 'force-dynamic';
 export default function DashboardPage() {
