@@ -127,7 +127,7 @@ export default function SentimentValidationPage() {
   }
 
   // Logika Filter
-  const filteredSentiments = sentiments.filter((item) => {
+  const filteredSentiments = (sentiments ?? []).filter((item) => {
     if (!filters.showValidated && item.is_validated) return false
     if (filters.sentiment !== 'all' && item.ai_sentiment !== filters.sentiment) return false
     if (filters.region !== 'all' && item.region_code !== filters.region) return false
@@ -139,7 +139,7 @@ export default function SentimentValidationPage() {
       <div className="min-h-screen bg-background">
         <TopNav />
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <PageHeader totalUnvalidated={sentiments.filter((s) => !s.is_validated).length} />
+          <PageHeader totalUnvalidated={(sentiments ?? []).filter((s) => !s.is_validated).length} />
 
           <SentimentFilters filters={filters} onFilterChange={setFilters} />
 

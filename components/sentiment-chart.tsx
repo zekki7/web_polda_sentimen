@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/auth-context'
 import { format, subDays, parseISO } from 'date-fns'
 import { id } from 'date-fns/locale'
 
-const API_URL = 'http://103.245.38.28/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://103.245.38.28/api'
 
 export function SentimentChart() {
   const { token } = useAuth()

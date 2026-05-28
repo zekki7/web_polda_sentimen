@@ -7,7 +7,7 @@ interface RecentActivityProps {
   activities?: any[] // Dibuat opsional biar TypeScript nggak error kalau parent-nya masih ngirim prop
 }
 
-const API_URL = 'http://103.245.38.28/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://103.245.38.28/api'
 
 export function RecentActivity({ activities: _ignored }: RecentActivityProps) {
   const { token } = useAuth()

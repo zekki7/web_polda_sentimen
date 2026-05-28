@@ -6,7 +6,7 @@ import { itemVariants } from '@/lib/animations/variants'
 import { useAuth } from '@/contexts/auth-context'
 import { SentimentChart } from '@/components/sentiment-chart'
 
-const API_URL = 'http://103.245.38.28/api'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://103.245.38.28/api'
 
 export function ChartsSection() {
   const { token } = useAuth()
