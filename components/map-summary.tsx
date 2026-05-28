@@ -1,85 +1,48 @@
 'use client'
-
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { useAuth } from '@/contexts/auth-context'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://103.245.38.28/api'
+interface MapSummaryProps {
+  rawData: any[]
+}
 
-export function MapSummary() {
-  const { token } = useAuth()
+export function MapSummary({ rawData }: MapSummaryProps) {
   const [regions, setRegions] = useState<any[]>([])
-  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const fetchMapData = async () => {
-      if (!token) return
-      try {
-        const response = await fetch(`${API_URL}/crawled-data?limit=200`, {
-          headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' }
-        })
-        const result = await response.json()
-
-        if (result.success && result.data && result.data.data) {
-          const data = result.data.data
-          const locationStats: Record<string, any> = {}
-
-          // Algoritma pengelompokan wilayah
-          data.forEach((item: any) => {
-            const loc = item.location
-            if (!loc || loc.toLowerCase() === 'tidak diketahui') return
-
-            // Normalisasi nama wilayah
-            const cleanLoc = loc.charAt(0).toUpperCase() + loc.slice(1).toLowerCase()
-
-            if (!locationStats[cleanLoc]) {
-              locationStats[cleanLoc] = { Positif: 0, Negatif: 0, Netral: 0, total: 0 }
-            }
-
-            const sentiment = item.ai_sentiment || 'Netral'
-            if (sentiment === 'Positif') locationStats[cleanLoc].Positif++
-            else if (sentiment === 'Negatif') locationStats[cleanLoc].Negatif++
-            else locationStats[cleanLoc].Netral++
-
-            locationStats[cleanLoc].total++
-          })
-
-          // Tentukan dominasi sentimen per wilayah
-          const processedRegions = Object.keys(locationStats).map(loc => {
-            const stats = locationStats[loc]
-            let dominant = 'Netral'
-            let maxCount = stats.Netral
-
-            if (stats.Positif > maxCount) { dominant = 'Positif'; maxCount = stats.Positif }
-            if (stats.Negatif > maxCount) { dominant = 'Negatif'; maxCount = stats.Negatif }
-
-            let color = 'bg-blue-500'
-            if (dominant === 'Positif') color = 'bg-green-500'
-            if (dominant === 'Negatif') color = 'bg-red-500'
-
-            return {
-              name: loc,
-              sentiment: dominant,
-              percentage: Math.round((maxCount / stats.total) * 100),
-              color: color,
-              total: stats.total
-            }
-          })
-
-          // Ambil 6 wilayah dengan laporan terbanyak
-          const topRegions = processedRegions.sort((a, b) => b.total - a.total).slice(0, 6)
-          setRegions(topRegions)
+    if (!rawData || rawData.length === 0) return
+    try {
+      const locationStats: Record<string, any> = {}
+      rawData.forEach((item: any) => {
+        const loc = item.location
+        if (!loc || loc.toLowerCase() === 'tidak diketahui') return
+        const cleanLoc = loc.charAt(0).toUpperCase() + loc.slice(1).toLowerCase()
+        if (!locationStats[cleanLoc]) {
+          locationStats[cleanLoc] = { Positif: 0, Negatif: 0, Netral: 0, total: 0 }
         }
-      } catch (error) {
-        console.error('Gagal memuat data peta:', error)
-      } finally {
-        setIsLoading(false)
-      }
+        const sentiment = item.ai_sentiment || 'Netral'
+        if (sentiment === 'Positif') locationStats[cleanLoc].Positif++
+        else if (sentiment === 'Negatif') locationStats[cleanLoc].Negatif++
+        else locationStats[cleanLoc].Netral++
+        locationStats[cleanLoc].total++
+      })
+      const processedRegions = Object.keys(locationStats).map(loc => {
+        const stats = locationStats[loc]
+        let dominant = 'Netral'
+        let maxCount = stats.Netral
+        if (stats.Positif > maxCount) { dominant = 'Positif'; maxCount = stats.Positif }
+        if (stats.Negatif > maxCount) { dominant = 'Negatif'; maxCount = stats.Negatif }
+        let color = 'bg-blue-500'
+        if (dominant === 'Positif') color = 'bg-green-500'
+        if (dominant === 'Negatif') color = 'bg-red-500'
+        return { name: loc, sentiment: dominant, percentage: Math.round((maxCount / stats.total) * 100), color, total: stats.total }
+      })
+      setRegions(processedRegions.sort((a, b) => b.total - a.total).slice(0, 6))
+    } catch (error) {
+      console.error('Gagal memuat data peta:', error)
     }
-
-    fetchMapData()
-  }, [token])
+  }, [rawData])
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.3 }} className="bg-card border border-border rounded-lg p-6">
@@ -92,12 +55,7 @@ export function MapSummary() {
           Lihat Detail
         </Link>
       </div>
-
-      {isLoading ? (
-        <div className="mb-6 bg-primary/20 rounded-lg p-8 text-center min-h-64 flex items-center justify-center animate-pulse">
-          <p className="text-muted-foreground">Mengkalkulasi sentimen wilayah...</p>
-        </div>
-      ) : regions.length === 0 ? (
+      {regions.length === 0 ? (
         <div className="mb-6 bg-primary/20 rounded-lg p-8 text-center min-h-64 flex flex-col items-center justify-center">
           <p className="text-4xl mb-2">📡</p>
           <p className="text-muted-foreground">Menunggu data lokasi yang valid dari mesin AI...</p>
@@ -118,22 +76,12 @@ export function MapSummary() {
           ))}
         </div>
       )}
-
       <div className="mt-6 pt-6 border-t border-border">
         <p className="text-sm font-semibold text-foreground mb-3">Indikator Sentimen</p>
         <div className="flex flex-wrap gap-6">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-green-500" />
-            <span className="text-sm text-muted-foreground">Dominan Positif</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500" />
-            <span className="text-sm text-muted-foreground">Netral</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-500" />
-            <span className="text-sm text-muted-foreground">Dominan Negatif</span>
-          </div>
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-green-500" /><span className="text-sm text-muted-foreground">Dominan Positif</span></div>
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-blue-500" /><span className="text-sm text-muted-foreground">Netral</span></div>
+          <div className="flex items-center gap-2"><div className="w-3 h-3 rounded-full bg-red-500" /><span className="text-sm text-muted-foreground">Dominan Negatif</span></div>
         </div>
       </div>
     </motion.div>

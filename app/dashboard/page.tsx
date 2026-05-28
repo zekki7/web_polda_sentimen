@@ -24,12 +24,13 @@ export default function DashboardPage() {
     negatif: 0,
     darurat: 0
   })
+  const [rawData, setRawData] = useState<any[]>([])
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       if (!token) return;
       try {
-        const response = await fetch(`${API_URL}/crawled-data?limit=10000`, {
+        const response = await fetch(`${API_URL}/crawled-data?limit=500`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Accept': 'application/json',
@@ -39,6 +40,7 @@ export default function DashboardPage() {
         
         if (result.success && result.data && result.data.data) {
           const data = result.data.data;
+          setRawData(data);
 
           // Kalkulasi Metrik dari Data ML
           const total = data.length;
@@ -77,7 +79,7 @@ export default function DashboardPage() {
             {/* Kirim data rekap hasil ML ke komponen StatsGrid */}
             <StatsGrid dynamicStats={stats} />
             
-            <ChartsSection />
+            <ChartsSection rawData={rawData} />
             
             <motion.div
               variants={itemVariants}
@@ -85,7 +87,7 @@ export default function DashboardPage() {
               animate="visible"
               transition={{ delay: 0.6 }}
             >
-              <MapSummary />
+              <MapSummary rawData={rawData} />
             </motion.div>
           </>
         )}
