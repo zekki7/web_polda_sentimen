@@ -20,7 +20,7 @@ export function SentimentList({
 }: SentimentListProps) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-4">
-      {(sentiments ?? []).map((sentiment, index) => (
+      {sentiments.map((sentiment, index) => (
         <SentimentCard
           key={sentiment.id}
           sentiment={sentiment}

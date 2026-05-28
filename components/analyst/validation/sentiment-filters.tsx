@@ -28,8 +28,8 @@ export function SentimentFilters({ filters, onFilterChange }: SentimentFiltersPr
   ]
 
   return (
-    <div className="mb-6 bg-card border border-border rounded-lg p-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="mb-6 bg-card border border-border rounded-lg p-4 overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 min-w-fit">
         {/* Show Validated Toggle */}
         <div>
           <label className="block text-sm font-medium text-muted-foreground mb-2">

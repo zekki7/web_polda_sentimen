@@ -1,7 +1,7 @@
 'use client'
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 
-export type UserRole = 'super_admin' | 'analyst'  | 'officer' | 'admin'
+export type UserRole = 'super_admin' | 'analyst' | 'officer' | 'admin'
 
 export interface User {
   id: string
@@ -19,6 +19,7 @@ interface AuthContextType {
   logout: () => void
   isAuthenticated: boolean
   hasRole: (roles: UserRole | UserRole[]) => boolean
+  devLoginAs: (role: UserRole) => Promise<{ success: boolean; message: string }>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -89,8 +90,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return roleArray.includes(user.role)
   }
 
+  const devLoginAs = async (role: UserRole) => {
+    const mockUsers: Record<UserRole, User> = {
+      super_admin: { id: 'dev-1', name: 'Dev Super Admin', nrp: '000000', email: 'dev@dev.com', role: 'super_admin', region_code: null },
+      admin: { id: 'dev-2', name: 'Dev Admin', nrp: '111111', email: 'dev@dev.com', role: 'admin', region_code: null },
+      analyst: { id: 'dev-3', name: 'Dev Analyst', nrp: '222222', email: 'dev@dev.com', role: 'analyst', region_code: null },
+      officer: { id: 'dev-4', name: 'Dev Officer', nrp: '333333', email: 'dev@dev.com', role: 'officer', region_code: null },
+    }
+
+    const mockUser = mockUsers[role]
+    if (mockUser) {
+      setUser(mockUser)
+      setToken('dev-token-' + role)
+      localStorage.setItem('user', JSON.stringify(mockUser))
+      localStorage.setItem('token', 'dev-token-' + role)
+      return { success: true, message: 'Dev login berhasil' }
+    }
+    return { success: false, message: 'Role tidak valid' }
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, hasRole }}>
+    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!user, hasRole, devLoginAs }}>
       {children}
     </AuthContext.Provider>
   )

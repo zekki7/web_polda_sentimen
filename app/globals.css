@@ -10,6 +10,26 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide-vertical::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide-vertical {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  html {
+    overflow-y: scroll;
+  }
+  html::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @layer base {

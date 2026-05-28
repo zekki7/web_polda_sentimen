@@ -42,7 +42,7 @@ export function SentimentCard({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.05 }}
-      className={`bg-card border rounded-lg p-6 ${
+      className={`bg-card border rounded-lg p-4 sm:p-6 overflow-hidden ${
         sentiment.is_validated
           ? 'border-border opacity-60'
           : 'border-accent shadow-lg'
@@ -69,10 +69,10 @@ export function SentimentCard({
             <p className="text-xs text-muted-foreground mb-1">Sentiment:</p>
             <span
               className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold border ${getSentimentColor(
-                sentiment.ai_sentiment
+                sentiment.ai_sentiment || 'Netral'
               )}`}
             >
-              {sentiment.ai_sentiment}
+              {sentiment.ai_sentiment || 'N/A'}
             </span>
           </div>
 
@@ -82,9 +82,11 @@ export function SentimentCard({
               Confidence Score:
             </p>
             <span
-              className={`text-2xl font-bold ${getConfidenceColor(sentiment.confidence_score ?? 0)}`}
+              className={`text-2xl font-bold ${getConfidenceColor(
+                sentiment.confidence_score
+              )}`}
             >
-              {sentiment.confidence_score ?? "N/A"}%
+              {sentiment.confidence_score}%
             </span>
           </div>
 
@@ -92,7 +94,7 @@ export function SentimentCard({
           <div>
             <p className="text-xs text-muted-foreground mb-1">Topic:</p>
             <span className="px-2 py-1 bg-blue-900/30 text-blue-300 rounded text-sm">
-              {sentiment.main_topic}
+              {sentiment.main_topic || 'N/A'}
             </span>
           </div>
 
@@ -100,7 +102,7 @@ export function SentimentCard({
           <div>
             <p className="text-xs text-muted-foreground mb-1">Keywords:</p>
             <div className="flex flex-wrap gap-1">
-              {( sentiment.keywords ?? []).map((keyword, i) => (
+              {sentiment.keywords.map((keyword, i) => (
                 <span
                   key={i}
                   className="px-2 py-0.5 bg-orange-900/30 text-orange-300 rounded text-xs"
@@ -115,7 +117,7 @@ export function SentimentCard({
         {/* Region */}
         <div className="mt-3 pt-3 border-t border-border">
           <p className="text-xs text-muted-foreground">
-            📍 Wilayah: <span className="text-foreground">{sentiment.location}</span>
+            📍 Wilayah: <span className="text-foreground">{sentiment.region}</span>
           </p>
         </div>
       </div>

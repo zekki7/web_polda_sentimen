@@ -159,11 +159,11 @@ export interface SentimentValidation {
   content: string
   platform: string
   posted_at: string
-  ai_sentiment: 'Positif' | 'Negatif' | 'Netral'
-  confidence_score: number
-  main_topic: string
-  keywords: string[]
-  region: string
+  ai_sentiment: 'Positif' | 'Negatif' | 'Netral' | null
+  confidence_score: number | null
+  main_topic: string | null
+  keywords: string[] | null
+  location: string | null
   is_validated: boolean
   validated_by?: string
   validated_at?: string
@@ -180,7 +180,7 @@ export const mockSentiments: SentimentValidation[] = [
     confidence_score: 87.5,
     main_topic: 'Lalu Lintas',
     keywords: ['kemacetan', 'kecelakaan', 'ahmad yani'],
-    region: 'SEMARANG',
+    location: 'SEMARANG',
     is_validated: false,
   },
   {
@@ -219,7 +219,7 @@ export const mockSentiments: SentimentValidation[] = [
     confidence_score: 91.3,
     main_topic: 'Keamanan',
     keywords: ['patroli', 'aman', 'polda'],
-    region: 'SEMARANG',
+    location: 'SEMARANG',
     is_validated: true,
     validated_by: 'Analis Data Semarang',
     validated_at: '2024-02-21 07:45',
